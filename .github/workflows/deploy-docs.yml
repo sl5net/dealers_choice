@@ -1,0 +1,33 @@
+name: Deploy Docs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [trunk]
+    paths:
+      - 'README.md'
+      - 'docs/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source repo
+        uses: actions/checkout@v4
+
+      - name: Prepare files for deployment
+        run: |
+          mkdir deploy
+          cp README.md deploy/
+          cp -r docs/* deploy/
+
+      - name: Deploy to destination repo
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          personal_token: ${{ secrets.DEPLOY_TOKEN }}
+          external_repository: your-username/your-target-repo
+          publish_branch: main  # or gh-pages
+          publish_dir: ./deploy
