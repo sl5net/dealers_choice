@@ -973,17 +973,17 @@ int run_server(const char *bind_address, Path_t *path, const bool test_mode) {
   }
 
   IPaddress ip;
+  // ip.host = SDL_SwapBE32(INADDR_LOOPBACK);  // 127.0.0.1
+  // ip.port = SDL_SwapBE16((Uint16)strtol(DEFAULT_PORT, NULL, 0));
   char *host = config.bind_address;
   if (!bind_address) {
-    // ip.host = SDL_SwapBE32(INADDR_LOOPBACK);  // 127.0.0.1
-    // ip.port = SDL_SwapBE16(default_port);
     host = config.bind_address;
     if (strcmp(config.bind_address, "NULL") == 0)
       host = NULL;
   } else
     host = (char *)bind_address;
   fprintf(stderr, "Resolving host: %s\n", (host) ? host : "NULL");
-  if (SDLNet_ResolveHost(&ip, host, atoi(DEFAULT_PORT)) == -1) {
+  if (SDLNet_ResolveHost(&ip, host, (Uint16)strtol(DEFAULT_PORT, NULL, 0)) == -1) {
     fprintf(stderr, "SDLNet_ResolveHost: %s\n", SDLNet_GetError());
     SDLNet_Quit();
     SDL_Quit();
@@ -992,6 +992,7 @@ int run_server(const char *bind_address, Path_t *path, const bool test_mode) {
 
   TCPsocket server = SDLNet_TCP_Open(&ip);
   if (!server) {
+    print_ipaddress(&ip);
     fprintf(stderr, "SDLNet_TCP_Open: %s\n", SDLNet_GetError());
     SDLNet_Quit();
     SDL_Quit();
